@@ -2,60 +2,60 @@ package com.company;
 import java.util.Random;
 
 public class Vector {
-    static int[] a;
-    static int[] b;
+    static int[] inputArray;
+    static int[] resultArray;
 
-    static void Eq(int start, int end) {
+    static void calculateSequential(int start, int end) {
         for (int i = start; i < end; i++) {
             for (int j = 0; j <= i; j++) {
-                b[i] += a[i] * 2;
+                resultArray[i] += inputArray[i] * 2;
             }
         }
     }
 
-    static void Circ(int iThread, int M) {
-        for (int i = iThread; i < b.length; i += M) {
+    static void calculateConcurrent(int threadIndex, int numThreads) {
+        for (int i = threadIndex; i < resultArray.length; i += numThreads) {
             for (int j = 0; j <= i; j++) {
-                b[i] += a[i] * 2;
+                resultArray[i] += inputArray[i] * 2;
             }
         }
     }
 
-    static String Single_Test(int N) {
-        a = new int[N];
-        b = new int[N];
+    static String singleTest(int N) {
+        inputArray = new int[N];
+        resultArray = new int[N];
         Random rand = new Random();
         for (int i = 0; i < N; i++) {
-            a[i] = rand.nextInt(10);
+            inputArray[i] = rand.nextInt(10);
         }
         long startTime = System.currentTimeMillis();
         for (int i = 0; i < 1000; i++) {
-            Eq(0, N);
+            calculateSequential(0, N);
         }
         long endTime = System.currentTimeMillis();
         double timeInSeconds = (endTime - startTime) / 1000.0;
         return String.format("%d элементов / Один поток / %.3f секунд", N, timeInSeconds);
     }
 
-    static String Multi_Test(int N, int numThreads) {
+    static String multiTest(int N, int numThreads) {
         int M = numThreads;
-        a = new int[N];
-        b = new int[N];
+        inputArray = new int[N];
+        resultArray = new int[N];
         Random rand = new Random();
         for (int i = 0; i < N; i++) {
-            a[i] = rand.nextInt(10);
+            inputArray[i] = rand.nextInt(10);
         }
         long startTime = System.currentTimeMillis();
         for (int i = 0; i < 1000; i++) {
-            Thread[] arrThr = new Thread[M];
+            Thread[] threadArray = new Thread[M];
             for (int j = 0; j < M; j++) {
                 int finalJ = j;
-                arrThr[j] = new Thread(() -> Circ(finalJ, M));
-                arrThr[j].start();
+                threadArray[j] = new Thread(() -> calculateConcurrent(finalJ, M));
+                threadArray[j].start();
             }
             for (int j = 0; j < M; j++) {
                 try {
-                    arrThr[j].join();
+                    threadArray[j].join();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -72,9 +72,9 @@ public class Vector {
         System.out.println("Количество элементов / Тест ");
 
         for (int N : vectorSizes) {
-            System.out.println(Single_Test(N));
+            System.out.println(singleTest(N));
             for (int numThreads = 2; numThreads <= 10; numThreads++) {
-                System.out.println(Multi_Test(N, numThreads));
+                System.out.println(multiTest(N, numThreads));
             }
             System.out.println("--------------------------");
         }
